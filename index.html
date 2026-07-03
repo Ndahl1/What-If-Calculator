@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<!-- saved from url=(0150)file:///C:/Users/NelsD/OneDrive%20-%20Leslie%20Heating,%20Cooling,%20Plumbing,%20&%20Electric/Desktop/Created%20Docs/What%20If%20Calculator/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leslie Margin Control — What-If Calculator</title>
+<style>
+  :root{
+    --navy:#12263f;
+    --navy2:#1d3a5f;
+    --ink:#1b2733;
+    --paper:#ffffff;
+    --bg:#eef1f5;
+    --line:#d7dde5;
+    --red:#c8102e;
+    --green:#0e8a4d;
+    --amber:#c47f00;
+    --mut:#5b6b7c;
+    --mono:'Roboto Mono','SF Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);
+    padding-bottom:48px;
+  }
+  header{
+    background:var(--navy);color:#fff;
+    padding:20px 24px 18px;
+    border-bottom:4px solid var(--red);
+  }
+  header h1{
+    font-size:22px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  }
+  header p{font-size:13px;color:#a9bdd4;margin-top:3px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+  .grid{
+    display:grid;grid-template-columns:340px 1fr;gap:18px;margin-top:18px;
+  }
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:18px 18px 20px;
+  }
+  .card h2{
+    font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--navy);margin-bottom:12px;
+    border-bottom:2px solid var(--red);padding-bottom:6px;display:inline-block;
+  }
+  label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin:12px 0 4px}
+  select,input[type=number]{
+    width:100%;padding:9px 10px;font-size:15px;border:1px solid var(--line);
+    border-radius:6px;background:#fff;color:var(--ink);font-family:inherit;
+  }
+  select:focus,input:focus{outline:2px solid var(--navy2);outline-offset:1px}
+  input[type=range]{width:100%;margin-top:8px;accent-color:var(--red)}
+  .bookline{
+    margin-top:14px;background:#f4f7fb;border:1px dashed var(--line);border-radius:8px;
+    padding:10px 12px;font-size:13px;color:var(--mut);
+  }
+  .bookline b{color:var(--navy);font-family:var(--mono);font-size:15px}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .quick button{
+    font-size:12px;font-weight:700;padding:6px 10px;border:1px solid var(--line);
+    background:#fff;border-radius:6px;cursor:pointer;color:var(--navy);
+  }
+  .quick button:hover{border-color:var(--navy);background:#f0f4f9}
+  .price-input{font-family:var(--mono);font-weight:700;font-size:20px !important;color:var(--navy)}
+  details{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+  summary{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut);cursor:pointer}
+  .adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink)}
+  .checkline input{width:auto}
+
+  /* ---- results ---- */
+  .hero{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;
+  }
+  .stat{
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  }
+  .stat .l{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut)}
+  .stat .v{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--navy);margin-top:4px}
+  .stat .s{font-size:11px;color:var(--mut);margin-top:2px}
+  .stat.good .v{color:var(--green)}
+  .stat.warn .v{color:var(--amber)}
+  .stat.bad .v{color:var(--red)}
+
+  /* waterfall */
+  .bar{
+    display:flex;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--line);
+    margin-top:6px;
+  }
+  .bar div{height:100%;transition:width .25s ease}
+  .seg-eq{background:#3d5a80}
+  .seg-mat{background:#6c8bb0}
+  .seg-ovh{background:#9db4cc}
+  .seg-fin{background:#c9a227}
+  .seg-com{background:#b23a48}
+  .seg-net{background:var(--green)}
+  .seg-loss{background:repeating-linear-gradient(45deg,#c8102e,#c8102e 6px,#8f0c21 6px,#8f0c21 12px)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-size:12px;color:var(--mut)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .targetline{position:relative;height:0}
+
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);border-bottom:2px solid var(--navy)}
+  td.num{font-family:var(--mono);font-weight:600}
+  tr.total td{border-top:2px solid var(--navy);font-weight:800;background:#f4f7fb}
+  .delta-pos{color:var(--green);font-weight:700}
+  .delta-neg{color:var(--red);font-weight:700}
+  .floornote{
+    margin-top:14px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.5;
+    background:#f4f7fb;border-left:4px solid var(--navy);color:var(--ink);
+  }
+  .floornote b{font-family:var(--mono)}
+  .statusband{
+    margin-top:14px;padding:12px 16px;border-radius:8px;font-weight:800;font-size:15px;
+    letter-spacing:.4px;color:#fff;text-align:center;text-transform:uppercase;
+  }
+  .footnote{font-size:11.5px;color:var(--mut);margin-top:16px;line-height:1.55}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Leslie Margin Control — What-If Calculator</h1>
+    <p>Standard Efficiency Pricebook · effective 7/1/26 · pick the product, move the price, watch the margin</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- LEFT: CONTROLS -->
+    <div class="card">
+      <h2>1 · Pick the Product</h2>
+
+      <label for="jobtype">Job Type</label>
+      <select id="jobtype">
+        <option value="system">Full System (Furnace + AC)</option>
+        <option value="furnace">Furnace Only</option>
+        <option value="ac">AC Only</option>
+      </select>
+
+      <label for="tier">Comfort System Tier</label>
+      <select id="tier">
+        <option>5 Star Elite</option>
+        <option>5 Star</option>
+        <option>4 Star</option>
+        <option>3 Star</option>
+        <option>2 Star</option>
+      </select>
+
+      <label for="size">Size (Tons)</label>
+      <select id="size">
+        <option value="1.5">1.5 Ton</option>
+        <option value="2">2 Ton</option>
+        <option value="2.5">2.5 Ton</option>
+        <option value="3">3 Ton</option>
+        <option value="3.5">3.5 Ton</option>
+        <option value="4">4 Ton</option>
+        <option value="5">5 Ton</option>
+      </select>
+
+      <div class="bookline">
+        Book Price: <b id="bookprice">$28,142</b><br>
+        <span id="bookpmt" style="font-size:12px">Payment at book: $305/mo (180 mo)</span>
+      </div>
+
+      <h2 style="margin-top:22px">2 · Set the Selling Price</h2>
+      <label for="sell">What-If Selling Price ($)</label>
+      <input type="number" id="sell" class="price-input" step="50" min="0">
+      <input type="range" id="sellrange" min="0" max="35200" step="50">
+      <div class="quick">
+        <button data-act="book">Book</button>
+        <button data-act="lfp">LFP (−5%)</button>
+        <button data-act="m500">−$500</button>
+        <button data-act="m1000">−$1,000</button>
+        <button data-act="m2000">−$2,000</button>
+      </div>
+
+      <details>
+        <summary>Assumptions (tap to adjust)</summary>
+        <div class="adv-grid">
+          <div>
+            <label for="commrate">Commission %</label>
+            <input type="number" id="commrate" value="13" step="0.5" min="0">
+          </div>
+          <div>
+            <label for="finrate">Financing Cost %</label>
+            <input type="number" id="finrate" value="8" step="0.5" min="0">
+          </div>
+          <div>
+            <label for="target">Target Margin %</label>
+            <input type="number" id="target" value="25" step="1" min="0">
+          </div>
+          <div>
+            <label for="addcost">Add-On / Accessory Cost $</label>
+            <input type="number" id="addcost" value="0" step="50" min="0">
+          </div>
+        </div>
+        <div class="checkline">
+          <input type="checkbox" id="cash">
+          <label for="cash" style="margin:0;text-transform:none;font-size:13px;letter-spacing:0">Cash deal — no dealer financing fee</label>
+        </div>
+        <label for="commmode">Commission Plan</label>
+        <select id="commmode">
+          <option value="pct">% of selling price</option>
+          <option value="protect">Discount comes out of commission</option>
+        </select>
+      </details>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="hero">
+        <div class="stat " id="st-gp"><div class="l">Gross Profit</div><div class="v" id="gp">$24,150</div><div class="s" id="gppct">85.8% of price</div></div>
+        <div class="stat good" id="st-np"><div class="l">Net Profit</div><div class="v" id="np">$13,295</div><div class="s" id="nppct">47.2% of price</div></div>
+        <div class="stat good" id="st-om"><div class="l">Obtained Margin</div><div class="v" id="om">47.2%</div><div class="s" id="omdelta">+22.2 pts vs 25% target</div></div>
+        <div class="stat"><div class="l">Consultant Commission</div><div class="v" id="comm">$3,658</div><div class="s" id="commnote">Target at book: $3,658</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Where Every Dollar Goes</h2>
+        <div class="bar" id="bar"><div class="seg-eq" title="Equipment $2,637" style="width: 9.37034%;"></div><div class="seg-mat" title="Materials + base pkg" style="width: 4.81487%;"></div><div class="seg-ovh" title="Overhead $4,945" style="width: 17.5716%;"></div><div class="seg-fin" title="Financing $2,251" style="width: 8%;"></div><div class="seg-com" title="Commission $3,658" style="width: 13%;"></div><div class="seg-net" title="Net profit $13,295" style="width: 47.2432%;"></div></div>
+        <div class="legend">
+          <span><i class="seg-eq"></i>Equipment</span>
+          <span><i class="seg-mat"></i>Materials + Base Pkg</span>
+          <span><i class="seg-ovh"></i>Overhead (Breakeven)</span>
+          <span><i class="seg-fin"></i>Financing</span>
+          <span><i class="seg-com"></i>Commission</span>
+          <span><i class="seg-net"></i>Net Profit</span>
+        </div>
+        <div class="statusband" id="band" style="background: var(--green);">Green — holding 25%+ margin</div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>Book Price vs. Your Price</h2>
+        <table>
+          <thead><tr><th>Line Item</th><th>At Book</th><th>At Your Price</th><th>Δ</th></tr></thead>
+          <tbody id="tbody"><tr><td>Selling Price</td>
+      <td class="num">$28,142</td>
+      <td class="num">$28,142</td>
+      <td class="num ">—</td></tr><tr><td>Discount off Book</td>
+      <td class="num">$0</td>
+      <td class="num">$0</td>
+      <td class="num ">—</td></tr><tr><td>Gross Profit $</td>
+      <td class="num">$24,150</td>
+      <td class="num">$24,150</td>
+      <td class="num ">—</td></tr><tr><td>Gross Profit %</td>
+      <td class="num">85.8%</td>
+      <td class="num">85.8%</td>
+      <td class="num ">—</td></tr><tr><td>Overhead (Breakeven)</td>
+      <td class="num">$4,945</td>
+      <td class="num">$4,945</td>
+      <td class="num ">—</td></tr><tr><td>Financing Cost</td>
+      <td class="num">$2,251</td>
+      <td class="num">$2,251</td>
+      <td class="num ">—</td></tr><tr><td>Commission to Consultant</td>
+      <td class="num">$3,658</td>
+      <td class="num">$3,658</td>
+      <td class="num ">—</td></tr><tr class="total"><td>Net Profit $</td>
+      <td class="num">$13,295</td>
+      <td class="num">$13,295</td>
+      <td class="num ">—</td></tr><tr><td>Net Profit / Obtained Margin %</td>
+      <td class="num">47.2%</td>
+      <td class="num">47.2%</td>
+      <td class="num ">—</td></tr></tbody>
+        </table>
+        <div class="floornote" id="floors">Floor to hold 25% margin: <b>$16,550</b> &nbsp;·&nbsp; True breakeven (0% net): <b>$11,320</b> &nbsp;·&nbsp; Payment at your price: <b>$305/mo</b></div>
+        <p class="footnote">
+          Model pulled straight from the 7/1/26 Standard Efficiency pricebook: equipment cost by tonnage,
+          $692 materials, $663 base accessory package, $4,945 breakeven day rate (full day for systems,
+          half day for furnace/AC only), 13% commission, 8% dealer financing, 25% margin, tier premiums of
+          $1,412 / $4,793 / $7,058 / $11,592 above 2-Star. Tier premiums carry no cost in the book —
+          use the Add-On Cost field to load in real accessory costs if you want a tougher number.
+          Payment = price × 0.01085 (180 months).
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FURN={"1.5":1135,"2":1135,"2.5":1135,"3":1372,"3.5":1372,"4":1433,"5":1534};
+const AC  ={"1.5":1502,"2":1591,"2.5":1709,"3":1857,"3.5":2172,"4":2388,"5":2767};
+const MATERIALS=692, PKG=663, BREAKEVEN=4945, PMT=0.01085;
+const PREMIUM={"2 Star":0,"3 Star":1412,"4 Star":4793,"5 Star":7058,"5 Star Elite":11592};
+
+const $=id=>document.getElementById(id);
+const fmt$=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString();
+const fmtP=n=>(n*100).toFixed(1)+"%";
+
+function jobParams(){
+  const type=$("jobtype").value, size=$("size").value, tier=$("tier").value;
+  let equip, days;
+  if(type==="system"){equip=FURN[size]+AC[size]; days=1;}
+  else if(type==="furnace"){equip=FURN[size]; days=0.5;}
+  else {equip=AC[size]; days=0.5;}
+  return {equip, days, premium:PREMIUM[tier]};
+}
+
+function bookPrice(p){
+  // pricebook constants: 25% margin, 13% comm, 8% financing in the divisor
+  const base=(p.equip+MATERIALS+PKG+BREAKEVEN*p.days)/(1-0.46);
+  return base+p.premium;
+}
+
+function calc(P, p, book){
+  const commRate=(+$("commrate").value||0)/100;
+  const finRate=$("cash").checked?0:(+$("finrate").value||0)/100;
+  const addCost=+$("addcost").value||0;
+  const direct=p.equip+MATERIALS+PKG+addCost;
+  const overhead=BREAKEVEN*p.days;
+  const financing=finRate*P;
+  let commission;
+  if($("commmode").value==="protect"){
+    commission=Math.max(0, commRate*book-Math.max(0,book-P));
+  }else{
+    commission=commRate*P;
+  }
+  const gp=P-direct;
+  const np=gp-overhead-financing-commission;
+  return {P,direct,overhead,financing,commission,gp,np,
+          gpPct:P?gp/P:0, npPct:P?np/P:0};
+}
+
+function floors(p, book){
+  // scan for price that hits target margin and true breakeven under current settings
+  const target=(+$("target").value||0)/100;
+  let floorTarget=null, floorZero=null;
+  for(let P=1000;P<=60000;P+=10){
+    const r=calc(P,p,book);
+    if(floorZero===null && r.np>=0) floorZero=P;
+    if(floorTarget===null && r.npPct>=target) floorTarget=P;
+    if(floorZero&&floorTarget) break;
+  }
+  return {floorTarget,floorZero,target};
+}
+
+function seg(cls,w,title){const d=document.createElement("div");d.className=cls;d.style.width=w+"%";d.title=title;return d;}
+
+function render(){
+  const p=jobParams();
+  const book=bookPrice(p);
+  $("bookprice").textContent=fmt$(book);
+  $("bookpmt").textContent="Payment at book: "+fmt$(book*PMT)+"/mo (180 mo)";
+  $("sellrange").max=Math.ceil(book*1.25/50)*50;
+
+  const P=+$("sell").value||0;
+  const r=calc(P,p,book);
+  const b=calc(book,p,book);
+  const target=(+$("target").value||0)/100;
+
+  // hero stats
+  $("gp").textContent=fmt$(r.gp); $("gppct").textContent=fmtP(r.gpPct)+" of price";
+  $("np").textContent=fmt$(r.np); $("nppct").textContent=fmtP(r.npPct)+" of price";
+  $("om").textContent=fmtP(r.npPct);
+  const delta=r.npPct-target;
+  $("omdelta").textContent=(delta>=0?"+":"−")+Math.abs(delta*100).toFixed(1)+" pts vs "+(target*100)+"% target";
+  $("comm").textContent=fmt$(r.commission);
+  $("commnote").textContent="Target at book: "+fmt$((+$("commrate").value/100)*book);
+
+  const cls=v=>v>=target?"good":(v>=0?"warn":"bad");
+  $("st-np").className="stat "+cls(r.npPct);
+  $("st-om").className="stat "+cls(r.npPct);
+  $("st-gp").className="stat "+(r.gp>=0?"":"bad");
+
+  // waterfall bar
+  const bar=$("bar"); bar.innerHTML="";
+  if(P>0){
+    const pct=v=>Math.max(0,v/P*100);
+    bar.appendChild(seg("seg-eq",pct(p.equip),"Equipment "+fmt$(p.equip)));
+    bar.appendChild(seg("seg-mat",pct(MATERIALS+PKG+(+$("addcost").value||0)),"Materials + base pkg"));
+    bar.appendChild(seg("seg-ovh",pct(r.overhead),"Overhead "+fmt$(r.overhead)));
+    bar.appendChild(seg("seg-fin",pct(r.financing),"Financing "+fmt$(r.financing)));
+    bar.appendChild(seg("seg-com",pct(r.commission),"Commission "+fmt$(r.commission)));
+    if(r.np>=0) bar.appendChild(seg("seg-net",pct(r.np),"Net profit "+fmt$(r.np)));
+    else bar.appendChild(seg("seg-loss",Math.min(25,pct(-r.np)),"LOSS "+fmt$(r.np)));
+  }
+
+  // status band
+  const band=$("band");
+  if(r.npPct>=target){band.textContent="Green — holding "+(target*100)+"%+ margin";band.style.background="var(--green)";}
+  else if(r.npPct>=0){band.textContent="Yellow — profitable, but below the "+(target*100)+"% target";band.style.background="var(--amber)";}
+  else {band.textContent="Red — this price loses money";band.style.background="var(--red)";}
+
+  // comparison table
+  const rows=[
+    ["Selling Price", b.P, r.P, true],
+    ["Discount off Book", 0, book-P, true],
+    ["Gross Profit $", b.gp, r.gp, true],
+    ["Gross Profit %", b.gpPct, r.gpPct, false],
+    ["Overhead (Breakeven)", b.overhead, r.overhead, true],
+    ["Financing Cost", b.financing, r.financing, true],
+    ["Commission to Consultant", b.commission, r.commission, true],
+    ["Net Profit $", b.np, r.np, true],
+    ["Net Profit / Obtained Margin %", b.npPct, r.npPct, false],
+  ];
+  const tb=$("tbody"); tb.innerHTML="";
+  rows.forEach(([name,bv,rv,isDollar],i)=>{
+    const tr=document.createElement("tr");
+    if(name.startsWith("Net Profit $")) tr.className="total";
+    const d=rv-bv;
+    const dTxt=isDollar
+      ? (d===0?"—":(d>0?"+":"−")+"$"+Math.abs(Math.round(d)).toLocaleString())
+      : (Math.abs(d)<0.0005?"—":(d>0?"+":"−")+Math.abs(d*100).toFixed(1)+" pts");
+    const good=(name==="Discount off Book"||name==="Financing Cost")?d<0:d>0;
+    tr.innerHTML=`<td>${name}</td>
+      <td class="num">${isDollar?fmt$(bv):fmtP(bv)}</td>
+      <td class="num">${isDollar?fmt$(rv):fmtP(rv)}</td>
+      <td class="num ${d===0?"":(good?"delta-pos":"delta-neg")}">${dTxt}</td>`;
+    tb.appendChild(tr);
+  });
+
+  // floors
+  const f=floors(p,book);
+  $("floors").innerHTML=
+    "Floor to hold "+(f.target*100)+"% margin: <b>"+(f.floorTarget?fmt$(f.floorTarget):"n/a")+"</b>"+
+    " &nbsp;·&nbsp; True breakeven (0% net): <b>"+(f.floorZero?fmt$(f.floorZero):"n/a")+"</b>"+
+    " &nbsp;·&nbsp; Payment at your price: <b>"+fmt$(P*PMT)+"/mo</b>";
+}
+
+function resetToBook(){
+  const book=bookPrice(jobParams());
+  $("sell").value=Math.round(book);
+  $("sellrange").value=Math.round(book);
+  render();
+}
+
+["jobtype","tier","size"].forEach(id=>$(id).addEventListener("change",resetToBook));
+["commrate","finrate","target","addcost","commmode"].forEach(id=>$(id).addEventListener("input",render));
+$("cash").addEventListener("change",render);
+$("sell").addEventListener("input",()=>{ $("sellrange").value=$("sell").value; render(); });
+$("sellrange").addEventListener("input",()=>{ $("sell").value=$("sellrange").value; render(); });
+document.querySelectorAll(".quick button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const book=bookPrice(jobParams());
+    const acts={book:book, lfp:book*0.95, m500:(+$("sell").value||book)-500,
+                m1000:(+$("sell").value||book)-1000, m2000:(+$("sell").value||book)-2000};
+    const v=Math.max(0,Math.round(acts[btn.dataset.act]));
+    $("sell").value=v; $("sellrange").value=v; render();
+  });
+});
+
+resetToBook();
+</script>
+
+
+</body></html>

@@ -71,6 +71,12 @@
   .adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
   .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink)}
   .checkline input{width:auto}
+  .commscale{margin-top:14px;font-size:12px}
+  .commscale b{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--navy2)}
+  .scaletable{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+  .scaletable th,.scaletable td{padding:4px 6px;text-align:center;border-bottom:1px solid #e3e8ee}
+  .scaletable th{color:#65748b;font-weight:600}
+  .scaletable td:first-child,.scaletable th:first-child{text-align:left}
 
   /* ---- results ---- */
   .hero{
@@ -199,13 +205,16 @@
         <option value="18|0">18 Months @ 0.00% APR</option>
       </select>
 
+      <label for="leadtype">Lead Type</label>
+      <select id="leadtype">
+        <option value="sgl">Self-Generated</option>
+        <option value="mkl">Marketed</option>
+        <option value="tgl">Tech-Generated</option>
+      </select>
+
       <details>
         <summary>Assumptions (tap to adjust)</summary>
         <div class="adv-grid">
-          <div>
-            <label for="commrate">Commission %</label>
-            <input type="number" id="commrate" value="13" step="0.5" min="0">
-          </div>
           <div>
             <label for="finrate">Financing Cost %</label>
             <input type="number" id="finrate" value="8" step="0.5" min="0">
@@ -223,11 +232,20 @@
           <input type="checkbox" id="cash">
           <label for="cash" style="margin:0;text-transform:none;font-size:13px;letter-spacing:0">Cash deal — no dealer financing fee</label>
         </div>
-        <label for="commmode">Commission Plan</label>
-        <select id="commmode">
-          <option value="pct">% of selling price</option>
-          <option value="protect">Discount comes out of commission</option>
-        </select>
+        <div class="commscale">
+          <b>Commission Scale (OPMAN 2025)</b>
+          <table class="scaletable">
+            <thead><tr><th>Margin</th><th>Self-Gen</th><th>Marketed</th><th>Tech-Gen</th></tr></thead>
+            <tbody>
+              <tr><td>≥ 25%</td><td>12%</td><td>10%</td><td>8%</td></tr>
+              <tr><td>20–24.9%</td><td>10%</td><td>8%</td><td>6%</td></tr>
+              <tr><td>15–19.9%</td><td>8%</td><td>6%</td><td>4%</td></tr>
+              <tr><td>10–14.9%</td><td>6%</td><td>4%</td><td>2%</td></tr>
+              <tr><td>&lt; 10%</td><td>2%</td><td>2%</td><td>2%</td></tr>
+            </tbody>
+          </table>
+          <div class="s" style="margin-top:6px">Commission % is set automatically from the lead type and margin your price achieves (measured the same way OPMAN payroll measures it) — it's no longer manually editable.</div>
+        </div>
       </details>
     </div>
 
@@ -270,11 +288,14 @@
         <p class="footnote">
           Model pulled straight from the 7/1/26 pricebooks: equipment cost by tonnage,
           materials ($692 Standard / $892 High Efficiency), $663 base accessory package, $4,945 breakeven
-          day rate (full day for systems, half day for furnace/AC only), 13% commission, 8% dealer financing,
-          25% margin. Tier premiums above 2-Star: Standard $1,412 / $4,793 / $7,058 / $11,592;
-          High Efficiency offers 4-Star and up with an Elite premium of $10,392. Tier premiums carry no
-          cost in the book — use the Add-On Cost field to load in real accessory costs if you want a
-          tougher number. Book payment = price × 0.01085 (180 months).
+          day rate (full day for systems, half day for furnace/AC only), 8% dealer financing,
+          25% margin. Book Price itself uses the pricebook's flat 13% blended commission assumption
+          (its published list-price basis) — the Consultant Commission shown for Your Price is the real
+          OPMAN 2025 rate, which runs 12%/10%/8% (Self-Gen/Marketed/Tech-Gen) at 25%+ margin and steps
+          down as margin erodes, floored at 2% below 10%. Tier premiums above 2-Star: Standard $1,412 /
+          $4,793 / $7,058 / $11,592; High Efficiency offers 4-Star and up with an Elite premium of $10,392.
+          Tier premiums carry no cost in the book — use the Add-On Cost field to load in real accessory
+          costs if you want a tougher number. Book payment = price × 0.01085 (180 months).
         </p>
       </div>
     </div>
@@ -301,6 +322,32 @@ const BOOKS={
   }
 };
 const PKG=663, BREAKEVEN=4945, PMT=0.01085;
+
+// OPMAN 2025 commission scale: rate by lead type, stepped down as margin
+// erodes, floored at 2% below 10%. Mirrors the live formula in the OPMAN
+// "Job Report" sheet: the qualifying margin is measured AFTER subtracting
+// that lead type's flat base-rate commission (12%/10%/8%), not after the
+// final tiered commission — a true post-final-commission self-consistency
+// check has dead zones (prices where no tier is stable) because commission
+// is a flat % of price, so this is both the mathematically sound approach
+// and what actually determines real paychecks.
+const LEAD_RATES={
+  sgl:{label:"Self-Generated", rates:[0.12,0.10,0.08,0.06,0.02]},
+  mkl:{label:"Marketed",       rates:[0.10,0.08,0.06,0.04,0.02]},
+  tgl:{label:"Tech-Generated", rates:[0.08,0.06,0.04,0.02,0.02]}
+};
+const MARGIN_THRESHOLDS=[0.25,0.20,0.15,0.10,0.05]; // level 1..5 lower bounds; below 5% stays floored at level 5
+function tierForMargin(pct){
+  for(let i=0;i<MARGIN_THRESHOLDS.length;i++) if(pct>=MARGIN_THRESHOLDS[i]) return i+1;
+  return 5;
+}
+function resolveCommission(leadKey, preCommProfit, P){
+  const rates=LEAD_RATES[leadKey].rates;
+  const baseRate=rates[0];
+  const marginAtBase=P?(preCommProfit-baseRate*P)/P:0;
+  const level=tierForMargin(marginAtBase);
+  return {rate:rates[level-1], level};
+}
 
 const $=id=>document.getElementById(id);
 const fmt$=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString();
@@ -339,22 +386,20 @@ function bookPrice(p){
 }
 
 function calc(P, p, book){
-  const commRate=(+$("commrate").value||0)/100;
   const finRate=$("cash").checked?0:(+$("finrate").value||0)/100;
   const addCost=+$("addcost").value||0;
   const direct=p.equip+p.mats+PKG+addCost;
   const overhead=BREAKEVEN*p.days;
   const financing=finRate*P;
-  let commission;
-  if($("commmode").value==="protect"){
-    commission=Math.max(0, commRate*book-Math.max(0,book-P));
-  }else{
-    commission=commRate*P;
-  }
   const gp=P-direct;
-  const np=gp-overhead-financing-commission;
+  const preCommProfit=gp-overhead-financing;
+  const leadKey=$("leadtype").value;
+  const cr=resolveCommission(leadKey, preCommProfit, P);
+  const commission=cr.rate*P;
+  const np=preCommProfit-commission;
   return {P,direct,overhead,financing,commission,gp,np,
-          gpPct:P?gp/P:0, npPct:P?np/P:0};
+          gpPct:P?gp/P:0, npPct:P?np/P:0,
+          commRate:cr.rate, commLevel:cr.level};
 }
 
 function floors(p, book){
@@ -391,7 +436,7 @@ function render(){
   const delta=r.npPct-target;
   $("omdelta").textContent=(delta>=0?"+":"−")+Math.abs(delta*100).toFixed(1)+" pts vs "+(target*100)+"% target";
   $("comm").textContent=fmt$(r.commission);
-  $("commnote").textContent="Target at book: "+fmt$((+$("commrate").value/100)*book);
+  $("commnote").textContent=LEAD_RATES[$("leadtype").value].label+" · Level "+r.commLevel+" · "+(r.commRate*100).toFixed(0)+"% rate";
 
   // selected financing plan payment
   const [pn,papr]=$("finplan").value.split("|").map(Number);
@@ -489,7 +534,8 @@ function resetToBook(){
 
 $("eff").addEventListener("change",()=>{ rebuildTiers(); resetToBook(); });
 ["jobtype","tier","size"].forEach(id=>$(id).addEventListener("change",resetToBook));
-["commrate","finrate","target","addcost","commmode","finplan"].forEach(id=>$(id).addEventListener("input",render));
+["finrate","target","addcost","finplan"].forEach(id=>$(id).addEventListener("input",render));
+$("leadtype").addEventListener("change",render);
 $("cash").addEventListener("change",render);
 $("sell").addEventListener("input",()=>{ $("sellrange").value=$("sell").value; render(); });
 $("sellrange").addEventListener("input",()=>{ $("sell").value=$("sellrange").value; render(); });

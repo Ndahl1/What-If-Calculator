@@ -2,554 +2,612 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leslie Margin Control — What-If Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Leslie Margin Control — Pricebook &amp; What-If Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --navy:#12263f;
-    --navy2:#1d3a5f;
-    --ink:#1b2733;
-    --paper:#ffffff;
-    --bg:#eef1f5;
-    --line:#d7dde5;
-    --red:#c8102e;
-    --green:#0e8a4d;
-    --amber:#c47f00;
-    --mut:#5b6b7c;
-    --mono:'Roboto Mono','SF Mono',Consolas,monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
-    background:var(--bg);color:var(--ink);
-    padding-bottom:48px;
-  }
-  header{
-    background:var(--navy);color:#fff;
-    padding:20px 24px 18px;
-    border-bottom:4px solid var(--red);
-  }
-  header h1{
-    font-size:22px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  }
-  header p{font-size:13px;color:#a9bdd4;margin-top:3px}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
-  .grid{
-    display:grid;grid-template-columns:340px 1fr;gap:18px;margin-top:18px;
-  }
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{
-    background:var(--paper);border:1px solid var(--line);border-radius:10px;
-    padding:18px 18px 20px;
-  }
-  .card h2{
-    font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
-    color:var(--navy);margin-bottom:12px;
-    border-bottom:2px solid var(--red);padding-bottom:6px;display:inline-block;
-  }
-  label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mut);margin:12px 0 4px}
-  select,input[type=number]{
-    width:100%;padding:9px 10px;font-size:15px;border:1px solid var(--line);
-    border-radius:6px;background:#fff;color:var(--ink);font-family:inherit;
-  }
-  select:focus,input:focus{outline:2px solid var(--navy2);outline-offset:1px}
-  input[type=range]{width:100%;margin-top:8px;accent-color:var(--red)}
-  .bookline{
-    margin-top:14px;background:#f4f7fb;border:1px dashed var(--line);border-radius:8px;
-    padding:10px 12px;font-size:13px;color:var(--mut);
-  }
-  .bookline b{color:var(--navy);font-family:var(--mono);font-size:15px}
-  .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .quick button{
-    font-size:12px;font-weight:700;padding:6px 10px;border:1px solid var(--line);
-    background:#fff;border-radius:6px;cursor:pointer;color:var(--navy);
-  }
-  .quick button:hover{border-color:var(--navy);background:#f0f4f9}
-  .price-input{font-family:var(--mono);font-weight:700;font-size:20px !important;color:var(--navy)}
-  details{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
-  summary{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut);cursor:pointer}
-  .adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-  .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink)}
-  .checkline input{width:auto}
-  .commscale{margin-top:14px;font-size:12px}
-  .commscale b{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--navy2)}
-  .scaletable{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
-  .scaletable th,.scaletable td{padding:4px 6px;text-align:center;border-bottom:1px solid #e3e8ee}
-  .scaletable th{color:#65748b;font-weight:600}
-  .scaletable td:first-child,.scaletable th:first-child{text-align:left}
+:root{
+  --ink:#16232E;
+  --ink-soft:#3D4F5E;
+  --paper:#EDF0F2;
+  --card:#FFFFFF;
+  --line:#D6DDE2;
+  --cool:#1B4E72;
+  --cool-deep:#123650;
+  --brass:#A8802E;
+  --brass-soft:#F3EAD3;
+  --ember:#B4451F;
+  --good:#2E6B3F;
+  --bad:#A83226;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(22,35,46,.06),0 6px 18px rgba(22,35,46,.08);
+  --disp:"Barlow Condensed",Impact,sans-serif;
+  --body:"Barlow Semi Condensed",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit}
 
-  /* ---- results ---- */
-  .hero{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;
-  }
-  .stat{
-    background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
-  }
-  .stat .l{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut)}
-  .stat .v{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--navy);margin-top:4px}
-  .stat .s{font-size:11px;color:var(--mut);margin-top:2px}
-  .stat.good .v{color:var(--green)}
-  .stat.warn .v{color:var(--amber)}
-  .stat.bad .v{color:var(--red)}
+/* ---------- header + tabs ---------- */
+header{background:var(--cool-deep);color:#fff;padding:18px 20px 0;position:relative}
+header::after{content:"";position:absolute;inset:auto 0 0 0;height:4px;
+  background:linear-gradient(90deg,var(--ember) 0%,var(--ember) 40%,var(--cool) 60%,#4A90C4 100%)}
+.masthead{max-width:1200px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.brand{font-family:var(--disp);font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:.04em;text-transform:uppercase}
+.brand small{display:block;font-family:var(--body);font-weight:500;font-size:12.5px;letter-spacing:.14em;color:#9DB6C8;text-transform:uppercase;margin-top:2px}
+.updated{font-size:12.5px;color:#9DB6C8;letter-spacing:.06em}
+.tabs{max-width:1200px;margin:14px auto 0;display:flex;gap:6px}
+.tabs button{padding:12px 22px 14px;font-family:var(--disp);font-size:19px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:#9DB6C8;border-radius:12px 12px 0 0;background:rgba(255,255,255,.06);min-height:48px}
+.tabs button.on{background:var(--paper);color:var(--ink)}
 
-  /* waterfall */
-  .bar{
-    display:flex;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--line);
-    margin-top:6px;
-  }
-  .bar div{height:100%;transition:width .25s ease}
-  .seg-eq{background:#3d5a80}
-  .seg-mat{background:#6c8bb0}
-  .seg-ovh{background:#9db4cc}
-  .seg-fin{background:#c9a227}
-  .seg-com{background:#b23a48}
-  .seg-net{background:var(--green)}
-  .seg-loss{background:repeating-linear-gradient(45deg,#c8102e,#c8102e 6px,#8f0c21 6px,#8f0c21 12px)}
-  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:8px;font-size:12px;color:var(--mut)}
-  .legend span{display:inline-flex;align-items:center;gap:5px}
-  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
-  .targetline{position:relative;height:0}
+/* ---------- shared controls ---------- */
+.controls{max-width:1200px;margin:0 auto;padding:16px 20px 6px;display:flex;flex-wrap:wrap;gap:14px 26px;align-items:flex-end}
+.ctl label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.seg{display:inline-flex;background:#fff;border:1.5px solid var(--line);border-radius:11px;overflow:hidden}
+.seg button{padding:10px 16px;font-size:15px;font-weight:600;color:var(--ink-soft);min-height:44px;border-right:1.5px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--cool);color:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{min-width:52px;min-height:44px;padding:0 12px;border-radius:11px;border:1.5px solid var(--line);background:#fff;font-weight:600;font-size:15px;color:var(--ink-soft)}
+.chips button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+main{max-width:1200px;margin:0 auto;padding:14px 20px 90px}
+.tabpane{display:none}
+.tabpane.on{display:block}
 
-  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
-  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
-  th:first-child,td:first-child{text-align:left}
-  thead th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);border-bottom:2px solid var(--navy)}
-  td.num{font-family:var(--mono);font-weight:600}
-  tr.total td{border-top:2px solid var(--navy);font-weight:800;background:#f4f7fb}
-  .delta-pos{color:var(--green);font-weight:700}
-  .delta-neg{color:var(--red);font-weight:700}
-  .floornote{
-    margin-top:14px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.5;
-    background:#f4f7fb;border-left:4px solid var(--navy);color:var(--ink);
-  }
-  .floornote b{font-family:var(--mono)}
-  .statusband{
-    margin-top:14px;padding:12px 16px;border-radius:8px;font-weight:800;font-size:15px;
-    letter-spacing:.4px;color:#fff;text-align:center;text-transform:uppercase;
-  }
-  .footnote{font-size:11.5px;color:var(--mut);margin-top:16px;line-height:1.55}
+/* ---------- package cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:10px}
+.pkg{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:16px 14px 14px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;text-align:left;transition:border-color .15s,transform .15s;position:relative}
+.pkg:hover{transform:translateY(-2px)}
+.pkg.sel{border-color:var(--brass)}
+.pkg.sel::before{content:"BUILDING FROM";position:absolute;top:-9px;left:12px;background:var(--brass);color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:.12em;padding:3px 8px;border-radius:5px}
+.stars{color:var(--brass);font-size:15px;letter-spacing:2px;margin-bottom:4px}
+.stars .off{color:#D9D2BE}
+.pkg h3{font-family:var(--disp);font-size:23px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.05}
+.pkg ul{list-style:none;margin:10px 0 12px;flex:1}
+.pkg li{font-size:13.5px;line-height:1.3;padding:4px 0 4px 16px;position:relative;color:var(--ink-soft);border-bottom:1px dotted #E4E9EC}
+.pkg li:last-child{border-bottom:none}
+.pkg li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;border-radius:2px;background:var(--cool);opacity:.75}
+.pkg .price{font-family:var(--disp);font-size:29px;font-weight:700;letter-spacing:.01em}
+.pkg .pmt{font-size:13px;color:var(--ink-soft);margin-top:1px}
+.pkg .pmt b{color:var(--good)}
+
+/* ---------- configurator ---------- */
+.build{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:26px;align-items:start}
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid var(--line)}
+.panel-h{padding:14px 18px;border-bottom:1.5px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px}
+.panel-h h2{font-family:var(--disp);font-size:21px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.panel-h span{font-size:13px;color:var(--ink-soft)}
+.cat{padding:6px 18px 4px;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:8px}
+.addon{display:flex;align-items:center;gap:13px;width:100%;padding:11px 18px;border-bottom:1px solid #EEF1F3;min-height:56px;text-align:left}
+.addon:last-child{border-bottom:none}
+.addon .box{width:24px;height:24px;flex:none;border:2px solid #B9C4CC;border-radius:7px;display:grid;place-items:center;transition:all .12s}
+.addon.on .box{background:var(--good);border-color:var(--good)}
+.addon .box svg{opacity:0;width:14px;height:14px}
+.addon.on .box svg{opacity:1}
+.addon .nm{flex:1}
+.addon .nm b{display:block;font-size:15px;font-weight:600}
+.addon .nm em{display:block;font-style:normal;font-size:12.5px;color:var(--ink-soft);margin-top:1px}
+.addon .pr{font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.addon.on .pr{color:var(--good)}
+.addon .pr::before{content:"+ "}
+.incl-note{padding:10px 18px 14px;font-size:12.5px;color:var(--ink-soft)}
+
+/* ---------- ticket ---------- */
+.ticket{position:sticky;top:14px;background:var(--ink);color:#fff;border:none;overflow:hidden}
+.ticket .panel-h{border-color:#2C3D4B}
+.ticket .panel-h h2{color:#fff}
+.ticket .panel-h span{color:#93A6B4}
+.tk-line{display:flex;justify-content:space-between;gap:10px;padding:8px 18px;font-size:14.5px;border-bottom:1px dashed #33465556}
+.tk-line span:first-child{color:#C3D0DA}
+.tk-line.base span:first-child{color:#fff;font-weight:600}
+.tk-line span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tk-line.add span:last-child{color:#8FD6A3}
+.tk-total{padding:14px 18px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.tk-total span{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#93A6B4;font-weight:700}
+.tk-total b{font-family:var(--disp);font-size:38px;font-weight:700;letter-spacing:.01em}
+.tk-pmt{padding:0 18px 8px;display:flex;justify-content:space-between;color:#C3D0DA;font-size:14px}
+.tk-pmt b{color:#8FD6A3;font-size:16px}
+.tk-delta{margin:10px 14px 0;background:#223442;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#C3D0DA;line-height:1.45}
+.tk-delta b{color:#F2C879}
+.tk-cta{display:block;width:calc(100% - 28px);margin:12px 14px 14px;padding:13px;border-radius:10px;background:var(--brass);
+  color:#fff;font-weight:700;font-size:15px;letter-spacing:.04em;text-align:center;min-height:48px}
+.tk-cta:hover{background:#8F6C24}
+
+/* ---------- what-if calculator ---------- */
+.wi-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+.wi-panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid var(--line);padding:16px 18px}
+.wi-panel h2{font-family:var(--disp);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.wi-panel h2 em{font-style:normal;font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--brass);display:block}
+.wi-row{margin-bottom:14px}
+.wi-row:last-child{margin-bottom:0}
+.wi-row>label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.bookline{display:flex;justify-content:space-between;align-items:baseline;background:var(--brass-soft);border:1.5px solid #E0D3AE;
+  border-radius:10px;padding:10px 14px;margin-top:4px}
+.bookline span{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7A5F1F}
+.bookline b{font-family:var(--disp);font-size:27px;font-weight:700}
+.priceinput{display:flex;align-items:center;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:4px 14px}
+.priceinput span{font-family:var(--disp);font-size:26px;font-weight:600;color:var(--ink-soft);margin-right:4px}
+.priceinput input{border:none;outline:none;width:100%;font-family:var(--disp);font-size:32px;font-weight:700;background:none;min-height:48px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.quick button{padding:9px 13px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-weight:600;font-size:13.5px;color:var(--ink-soft);min-height:40px}
+.quick button:hover{border-color:var(--ink);color:var(--ink)}
+select.plan{width:100%;min-height:48px;padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;background:#fff;font-size:15px;font-weight:600}
+.assume{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.assume .field{background:#F5F7F8;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px}
+.assume .field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:2px}
+.assume input{width:100%;border:none;background:none;outline:none;font-family:var(--disp);font-size:21px;font-weight:600;min-height:32px}
+.cash{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;font-weight:600;color:var(--ink-soft);cursor:pointer;user-select:none;min-height:44px}
+.cash .sw{width:46px;height:26px;border-radius:13px;background:#C4CED5;position:relative;transition:background .15s;flex:none}
+.cash .sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.cash.on .sw{background:var(--good)}
+.cash.on .sw::after{left:23px}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}
+.stat{background:var(--ink);color:#fff;border-radius:var(--radius);padding:14px 16px}
+.stat label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#93A6B4;margin-bottom:4px}
+.stat b{font-family:var(--disp);font-size:30px;font-weight:700;letter-spacing:.01em}
+.stat.pos b{color:#8FD6A3}
+.stat.neg b{color:#F09A8C}
+.stat.warn b{color:#F2C879}
+.stat small{display:block;font-size:11.5px;color:#93A6B4;margin-top:2px}
+
+.barwrap{margin-top:16px}
+.bar{display:flex;height:52px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.bar div{display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;letter-spacing:.04em;white-space:nowrap;overflow:hidden;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-soft);text-align:right;padding:8px 10px;border-bottom:2px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 10px;border-bottom:1px solid #EEF1F3;text-align:right;font-variant-numeric:tabular-nums}
+td.pos{color:var(--good);font-weight:600}
+td.neg{color:var(--bad);font-weight:600}
+.wi-tables{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+
+footer{max-width:1200px;margin:0 auto;padding:18px 20px 40px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+
+@media (max-width:1020px){
+  .cards{grid-template-columns:repeat(5,minmax(210px,1fr));overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory}
+  .pkg{scroll-snap-align:start}
+  .build,.wi-grid,.wi-tables{grid-template-columns:1fr}
+  .ticket{position:static}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stats .stat:last-child{grid-column:1/-1}
+}
+@media (max-width:640px){
+  main{padding:12px 12px 70px}
+  .controls{padding:14px 12px 4px}
+  .assume{grid-template-columns:1fr}
+  .tabs button{padding:10px 14px 12px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
 </style>
 </head>
 <body>
 <header>
-  <div class="wrap">
-    <h1>Leslie Margin Control — What-If Calculator</h1>
-    <p>Standard & High Efficiency Pricebooks · effective 7/1/26 · pick the product, move the price, watch the margin</p>
+  <div class="masthead">
+    <div class="brand">Leslie Margin Control<small>Pricebook &amp; What-If Calculator · Effective 07/01/26</small></div>
+    <div class="updated">Pricing updated 3.27.26</div>
   </div>
+  <nav class="tabs">
+    <button id="tabPB" class="on" onclick="showTab('pb')">Pricebook</button>
+    <button id="tabWI" onclick="showTab('wi')">What-If Calculator</button>
+  </nav>
 </header>
 
-<div class="wrap">
-  <div class="grid">
-
-    <!-- LEFT: CONTROLS -->
-    <div class="card">
-      <h2>1 · Pick the Product</h2>
-
-      <label for="eff">Efficiency Book</label>
-      <select id="eff">
-        <option value="std">Standard Efficiency</option>
-        <option value="high">High Efficiency</option>
-      </select>
-
-      <label for="jobtype">Job Type</label>
-      <select id="jobtype">
-        <option value="system">Full System (Furnace + AC)</option>
-        <option value="furnace">Furnace Only</option>
-        <option value="ac">AC Only</option>
-      </select>
-
-      <label for="tier">Comfort System Tier</label>
-      <select id="tier">
-        <option>5 Star Elite</option>
-        <option>5 Star</option>
-        <option>4 Star</option>
-        <option>3 Star</option>
-        <option>2 Star</option>
-      </select>
-
-      <label for="size">Size (Tons)</label>
-      <select id="size">
-        <option value="1.5">1.5 Ton</option>
-        <option value="2">2 Ton</option>
-        <option value="2.5">2.5 Ton</option>
-        <option value="3">3 Ton</option>
-        <option value="3.5">3.5 Ton</option>
-        <option value="4">4 Ton</option>
-        <option value="5">5 Ton</option>
-      </select>
-
-      <div class="bookline">
-        Book Price: <b id="bookprice">$0</b><br>
-        <span id="bookpmt" style="font-size:12px"></span>
-      </div>
-
-      <h2 style="margin-top:22px">2 · Set the Selling Price</h2>
-      <label for="sell">What-If Selling Price ($)</label>
-      <input type="number" id="sell" class="price-input" step="50" min="0">
-      <input type="range" id="sellrange" min="0" max="40000" step="50">
-      <div class="quick">
-        <button data-act="book">Book</button>
-        <button data-act="lfp">LFP (−5%)</button>
-        <button data-act="m500">−$500</button>
-        <button data-act="m1000">−$1,000</button>
-        <button data-act="m2000">−$2,000</button>
-      </div>
-
-      <label for="finplan">Financing Plan</label>
-      <select id="finplan">
-        <option value="61|0.0799">61 Months @ 7.99% APR</option>
-        <option value="132|0.0999">132 Months @ 9.99% APR</option>
-        <option value="37|0.0599">37 Months @ 5.99% APR</option>
-        <option value="78|0.0999">78 Months @ 9.99% APR</option>
-        <option value="6|0">6 Months @ 0.00% APR</option>
-        <option value="18|0">18 Months @ 0.00% APR</option>
-      </select>
-
-      <label for="leadtype">Lead Type</label>
-      <select id="leadtype">
-        <option value="sgl">Self-Generated</option>
-        <option value="mkl">Marketed</option>
-        <option value="tgl">Tech-Generated</option>
-      </select>
-
-      <details>
-        <summary>Assumptions (tap to adjust)</summary>
-        <div class="adv-grid">
-          <div>
-            <label for="finrate">Financing Cost %</label>
-            <input type="number" id="finrate" value="8" step="0.5" min="0">
-          </div>
-          <div>
-            <label for="target">Target Margin %</label>
-            <input type="number" id="target" value="25" step="1" min="0">
-          </div>
-          <div>
-            <label for="addcost">Add-On / Accessory Cost $</label>
-            <input type="number" id="addcost" value="0" step="50" min="0">
-          </div>
-        </div>
-        <div class="checkline">
-          <input type="checkbox" id="cash">
-          <label for="cash" style="margin:0;text-transform:none;font-size:13px;letter-spacing:0">Cash deal — no dealer financing fee</label>
-        </div>
-        <div class="commscale">
-          <b>Commission Scale (OPMAN 2025)</b>
-          <table class="scaletable">
-            <thead><tr><th>Margin</th><th>Self-Gen</th><th>Marketed</th><th>Tech-Gen</th></tr></thead>
-            <tbody>
-              <tr><td>≥ 25%</td><td>12%</td><td>10%</td><td>8%</td></tr>
-              <tr><td>20–24.9%</td><td>10%</td><td>8%</td><td>6%</td></tr>
-              <tr><td>15–19.9%</td><td>8%</td><td>6%</td><td>4%</td></tr>
-              <tr><td>10–14.9%</td><td>6%</td><td>4%</td><td>2%</td></tr>
-              <tr><td>&lt; 10%</td><td>2%</td><td>2%</td><td>2%</td></tr>
-            </tbody>
-          </table>
-          <div class="s" style="margin-top:6px">Commission % is set automatically from the lead type and margin your price achieves (measured the same way OPMAN payroll measures it) — it's no longer manually editable.</div>
-        </div>
-      </details>
-    </div>
-
-    <!-- RIGHT: RESULTS -->
-    <div>
-      <div class="hero">
-        <div class="stat" id="st-gp"><div class="l">Gross Profit</div><div class="v" id="gp">$0</div><div class="s" id="gppct"></div></div>
-        <div class="stat" id="st-np"><div class="l">Net Profit</div><div class="v" id="np">$0</div><div class="s" id="nppct"></div></div>
-        <div class="stat" id="st-om"><div class="l">Obtained Margin</div><div class="v" id="om">0%</div><div class="s" id="omdelta"></div></div>
-        <div class="stat"><div class="l">Consultant Commission</div><div class="v" id="comm">$0</div><div class="s" id="commnote"></div></div>
-        <div class="stat"><div class="l">Monthly Payment</div><div class="v" id="pmtplan">$0</div><div class="s" id="pmtplannote"></div></div>
-      </div>
-
-      <div class="card">
-        <h2>Where Every Dollar Goes</h2>
-        <div class="bar" id="bar"></div>
-        <div class="legend">
-          <span><i class="seg-eq"></i>Equipment</span>
-          <span><i class="seg-mat"></i>Materials + Base Pkg</span>
-          <span><i class="seg-ovh"></i>Overhead (Breakeven)</span>
-          <span><i class="seg-fin"></i>Financing</span>
-          <span><i class="seg-com"></i>Commission</span>
-          <span><i class="seg-net"></i>Net Profit</span>
-        </div>
-        <div class="statusband" id="band">—</div>
-      </div>
-
-      <div class="card" style="margin-top:16px">
-        <h2>Book Price vs. Your Price</h2>
-        <table>
-          <thead><tr><th>Line Item</th><th>At Book</th><th>At Your Price</th><th>Δ</th></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-        <div class="floornote" id="floors"></div>
-        <h2 style="margin-top:20px">Payment Options at Your Price</h2>
-        <table>
-          <thead><tr><th>Plan</th><th>Payment / Mo</th><th>Total of Payments</th><th>Finance Charge</th></tr></thead>
-          <tbody id="plansbody"></tbody>
-        </table>
-        <p class="footnote">
-          Model pulled straight from the 7/1/26 pricebooks: equipment cost by tonnage,
-          materials ($692 Standard / $892 High Efficiency), $663 base accessory package, $4,945 breakeven
-          day rate (full day for systems, half day for furnace/AC only), 8% dealer financing,
-          25% margin. Book Price itself uses the pricebook's flat 13% blended commission assumption
-          (its published list-price basis) — the Consultant Commission shown for Your Price is the real
-          OPMAN 2025 rate, which runs 12%/10%/8% (Self-Gen/Marketed/Tech-Gen) at 25%+ margin and steps
-          down as margin erodes, floored at 2% below 10%. Tier premiums above 2-Star: Standard $1,412 /
-          $4,793 / $7,058 / $11,592; High Efficiency offers 4-Star and up with an Elite premium of $10,392.
-          Tier premiums carry no cost in the book — use the Add-On Cost field to load in real accessory
-          costs if you want a tougher number. Book payment = price × 0.01085 (180 months).
-        </p>
-      </div>
-    </div>
+<!-- ============ TAB 1: PRICEBOOK ============ -->
+<div class="tabpane on" id="panePB">
+<div class="controls">
+  <div class="ctl"><label>Efficiency</label><div class="seg" id="segEff"></div></div>
+  <div class="ctl"><label>Equipment</label><div class="seg" id="segProd"></div></div>
+  <div class="ctl"><label>System size (tons)</label><div class="chips" id="chipsTon"></div></div>
+</div>
+<main>
+  <div class="cards" id="cards"></div>
+  <div class="build">
+    <section class="panel">
+      <div class="panel-h"><h2>À la carte options</h2><span id="addonSub"></span></div>
+      <div id="addonList"></div>
+      <p class="incl-note" id="inclNote"></p>
+    </section>
+    <aside class="panel ticket">
+      <div class="panel-h"><h2>Your build</h2><span id="tkSub"></span></div>
+      <div id="tkLines"></div>
+      <div class="tk-total"><span>Investment</span><b id="tkTotal"></b></div>
+      <div class="tk-pmt"><span>Monthly payment · 180 mo</span><b id="tkPmt"></b></div>
+      <div class="tk-delta" id="tkDelta"></div>
+      <button class="tk-cta" onclick="sendToWhatIf()">Analyze this price in What-If →</button>
+    </aside>
   </div>
+</main>
 </div>
 
+<!-- ============ TAB 2: WHAT-IF CALCULATOR ============ -->
+<div class="tabpane" id="paneWI">
+<div class="controls">
+  <div class="ctl"><label>Efficiency book</label><div class="seg" id="wiSegEff"></div></div>
+  <div class="ctl"><label>Job type</label><div class="seg" id="wiSegProd"></div></div>
+  <div class="ctl"><label>Tier</label><div class="chips" id="wiChipsTier"></div></div>
+  <div class="ctl"><label>Size (tons)</label><div class="chips" id="wiChipsTon"></div></div>
+</div>
+<main>
+  <div class="wi-grid">
+    <section class="wi-panel">
+      <h2><em>Step 1</em>Set the selling price</h2>
+      <div class="bookline"><span>Book price</span><b id="wiBook"></b></div>
+      <div class="wi-row" style="margin-top:14px">
+        <label>What-if selling price ($)</label>
+        <div class="priceinput"><span>$</span><input id="wiPrice" type="number" inputmode="decimal" step="1"></div>
+        <div class="quick">
+          <button onclick="nudge('book')">Book</button>
+          <button onclick="nudge('lfp')">LFP (−5%)</button>
+          <button onclick="nudge(-500)">−$500</button>
+          <button onclick="nudge(-1000)">−$1,000</button>
+          <button onclick="nudge(-2000)">−$2,000</button>
+        </div>
+      </div>
+    </section>
+    <section class="wi-panel">
+      <h2><em>Step 2</em>Deal terms &amp; assumptions</h2>
+      <div class="wi-row"><label>Financing plan</label>
+        <select class="plan" id="wiPlan"></select></div>
+      <div class="wi-row"><label>Lead type</label><div class="seg" id="wiSegLead"></div></div>
+      <div class="wi-row"><label>Assumptions (tap to adjust)</label>
+        <div class="assume">
+          <div class="field"><label>Financing cost %</label><input id="wiFin" type="number" inputmode="decimal" step="0.5" value="8"></div>
+          <div class="field"><label>Target margin %</label><input id="wiTarget" type="number" inputmode="decimal" step="1" value="25"></div>
+          <div class="field"><label>Add-on cost $</label><input id="wiAddCost" type="number" inputmode="decimal" step="50" value="0"></div>
+        </div>
+        <div class="cash" id="wiCash" role="switch" aria-checked="false" tabindex="0">
+          <span class="sw"></span>Cash deal — no dealer financing fee</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="stats">
+    <div class="stat" id="stGP"><label>Gross profit</label><b>$0</b></div>
+    <div class="stat" id="stNet"><label>Net profit</label><b>$0</b></div>
+    <div class="stat" id="stMargin"><label>Obtained margin</label><b>0%</b><small id="stMarginNote"></small></div>
+    <div class="stat" id="stComm"><label>Consultant commission</label><b>$0</b><small id="stCommNote"></small></div>
+    <div class="stat" id="stPmt"><label>Monthly payment</label><b>$0</b><small id="stPmtNote"></small></div>
+  </div>
+
+  <div class="barwrap">
+    <div class="bar" id="wiBar"></div>
+    <div class="legend" id="wiLegend"></div>
+  </div>
+
+  <div class="wi-tables">
+    <section class="wi-panel">
+      <h2>Book price vs. your price</h2>
+      <table><thead><tr><th>Line item</th><th>At book</th><th>At your price</th><th>Δ</th></tr></thead>
+      <tbody id="wiCompare"></tbody></table>
+    </section>
+    <section class="wi-panel">
+      <h2>Payment options at your price</h2>
+      <table><thead><tr><th>Plan</th><th>Payment / mo</th><th>Total of payments</th><th>Finance charge</th></tr></thead>
+      <tbody id="wiPlans"></tbody></table>
+    </section>
+  </div>
+</main>
+</div>
+
+<footer>
+  Model pulled straight from the 7/1/26 pricebooks: equipment cost by tonnage, materials ($692 Standard / $892 High
+  Efficiency), $663 base accessory package, $4,945 breakeven day rate (full day for systems, half day for furnace/AC only),
+  8% dealer financing, 25% margin. Book Price uses the pricebook's flat 13% blended commission assumption — the Consultant
+  Commission shown for Your Price is the real OPMAN 2025 rate (12%/10%/8% Self-Gen/Marketed/Tech-Gen at 25%+ margin,
+  stepping down as margin erodes, floored at 2% below 10%). Tier premiums carry no equipment cost in the book — use the
+  Add-On Cost field to load real accessory costs for a tougher number. Pricebook tab payments use the book factor of
+  0.01085 over 180 months; the à la carte option prices are the pricebook's retail accessory values.
+</footer>
+
 <script>
-const BOOKS={
-  std:{
-    label:"Standard Efficiency",
-    furnCost:{"1.5":1135,"2":1135,"2.5":1135,"3":1372,"3.5":1372,"4":1433,"5":1534},
-    acCost:{"1.5":1502,"2":1591,"2.5":1709,"3":1857,"3.5":2172,"4":2388,"5":2767},
-    acMat:381, furnMat:311,
-    premiums:{"2 Star":0,"3 Star":1412,"4 Star":4793,"5 Star":7058,"5 Star Elite":11592},
-    tiers:["5 Star Elite","5 Star","4 Star","3 Star","2 Star"]
-  },
-  high:{
-    label:"High Efficiency",
-    furnCost:{"1.5":1483,"2":1555,"2.5":1555,"3":1701,"3.5":1701,"4":2158,"5":2158},
-    acCost:{"1.5":2000,"2":2000,"2.5":1542,"3":1682,"3.5":2432,"4":2432,"5":2790},
-    acMat:381, furnMat:511,
-    premiums:{"4 Star":4793,"5 Star":7058,"5 Star Elite":10392},
-    tiers:["5 Star Elite","5 Star","4 Star"]
-  }
-};
-const PKG=663, BREAKEVEN=4945, PMT=0.01085;
+const BOOK = {"standard": {"products": {"system": {"prices": {"1.5": {"5 Star Elite": 28142, "5 Star": 23608, "4 Star": 21343, "3 Star": 17962, "2 Star": 16550}, "2": {"5 Star Elite": 28306.814814814814, "5 Star": 23772.814814814814, "4 Star": 21507.814814814814, "3 Star": 18126.814814814814, "2 Star": 16714.814814814814}, "2.5": {"5 Star Elite": 28525.333333333332, "5 Star": 23991.333333333332, "4 Star": 21726.333333333332, "3 Star": 18345.333333333332, "2 Star": 16933.333333333332}, "3": {"5 Star Elite": 29238.296296296296, "5 Star": 24704.296296296296, "4 Star": 22439.296296296296, "3 Star": 19058.296296296296, "2 Star": 17646.296296296296}, "3.5": {"5 Star Elite": 29821.629629629628, "5 Star": 25287.629629629628, "4 Star": 23022.629629629628, "3 Star": 19641.629629629628, "2 Star": 18229.629629629628}, "4": {"5 Star Elite": 30334.59259259259, "5 Star": 25800.59259259259, "4 Star": 23535.59259259259, "3 Star": 20154.59259259259, "2 Star": 18742.59259259259}, "5": {"5 Star Elite": 31223.48148148148, "5 Star": 26689.48148148148, "4 Star": 24424.48148148148, "3 Star": 21043.48148148148, "2 Star": 19631.48148148148}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}, "furnace": {"prices": {"1.5": {"5 Star Elite": 20781.814814814814, "5 Star": 16247.814814814814, "4 Star": 13982.814814814814, "3 Star": 10601.814814814814, "2 Star": 9189.814814814814}, "2": {"5 Star Elite": 20781.814814814814, "5 Star": 16247.814814814814, "4 Star": 13982.814814814814, "3 Star": 10601.814814814814, "2 Star": 9189.814814814814}, "2.5": {"5 Star Elite": 20781.814814814814, "5 Star": 16247.814814814814, "4 Star": 13982.814814814814, "3 Star": 10601.814814814814, "2 Star": 9189.814814814814}, "3": {"5 Star Elite": 21220.7037037037, "5 Star": 16686.7037037037, "4 Star": 14421.703703703703, "3 Star": 11040.703703703703, "2 Star": 9628.703703703703}, "3.5": {"5 Star Elite": 21220.7037037037, "5 Star": 16686.7037037037, "4 Star": 14421.703703703703, "3 Star": 11040.703703703703, "2 Star": 9628.703703703703}, "4": {"5 Star Elite": 21333.666666666664, "5 Star": 16799.666666666664, "4 Star": 14534.666666666666, "3 Star": 11153.666666666666, "2 Star": 9741.666666666666}, "5": {"5 Star Elite": 21520.7037037037, "5 Star": 16986.7037037037, "4 Star": 14721.703703703703, "3 Star": 11340.703703703703, "2 Star": 9928.703703703703}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}, "ac": {"prices": {"1.5": {"5 Star Elite": 21461.444444444445, "5 Star": 16927.444444444445, "4 Star": 14662.444444444443, "3 Star": 11281.444444444443, "2 Star": 9869.444444444443}, "2": {"5 Star Elite": 21626.25925925926, "5 Star": 17092.25925925926, "4 Star": 14827.25925925926, "3 Star": 11446.25925925926, "2 Star": 10034.25925925926}, "2.5": {"5 Star Elite": 21844.777777777777, "5 Star": 17310.777777777777, "4 Star": 15045.777777777777, "3 Star": 11664.777777777777, "2 Star": 10252.777777777777}, "3": {"5 Star Elite": 22118.85185185185, "5 Star": 17584.85185185185, "4 Star": 15319.85185185185, "3 Star": 11938.85185185185, "2 Star": 10526.85185185185}, "3.5": {"5 Star Elite": 22702.185185185182, "5 Star": 18168.185185185182, "4 Star": 15903.185185185184, "3 Star": 12522.185185185184, "2 Star": 11110.185185185184}, "4": {"5 Star Elite": 23102.185185185182, "5 Star": 18568.185185185182, "4 Star": 16303.185185185184, "3 Star": 12922.185185185184, "2 Star": 11510.185185185184}, "5": {"5 Star Elite": 23804.037037037036, "5 Star": 19270.037037037036, "4 Star": 17005.037037037036, "3 Star": 13624.037037037036, "2 Star": 12212.037037037036}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}}}, "high": {"products": {"system": {"prices": {"1.5": {"5 Star Elite": 28879.037037037036, "5 Star": 25545.037037037036, "4 Star": 23280.037037037036, "3 Star": 19899.037037037036, "2 Star": 18487.037037037036}, "2": {"5 Star Elite": 29012.37037037037, "5 Star": 25678.37037037037, "4 Star": 23413.37037037037, "3 Star": 20032.37037037037, "2 Star": 18620.37037037037}, "2.5": {"5 Star Elite": 28164.222222222223, "5 Star": 24830.222222222223, "4 Star": 22565.222222222223, "3 Star": 19184.222222222223, "2 Star": 17772.222222222223}, "3": {"5 Star Elite": 28693.85185185185, "5 Star": 25359.85185185185, "4 Star": 23094.85185185185, "3 Star": 19713.85185185185, "2 Star": 18301.85185185185}, "3.5": {"5 Star Elite": 30082.74074074074, "5 Star": 26748.74074074074, "4 Star": 24483.74074074074, "3 Star": 21102.74074074074, "2 Star": 19690.74074074074}, "4": {"5 Star Elite": 30929.037037037036, "5 Star": 27595.037037037036, "4 Star": 25330.037037037036, "3 Star": 21949.037037037036, "2 Star": 20537.037037037036}, "5": {"5 Star Elite": 31592, "5 Star": 28258, "4 Star": 25993, "3 Star": 22612, "2 Star": 21200}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}, "furnace": {"prices": {"1.5": {"5 Star Elite": 20596.629629629628, "5 Star": 17262.629629629628, "4 Star": 14997.62962962963, "3 Star": 11616.62962962963, "2 Star": 10204.62962962963}, "2": {"5 Star Elite": 20729.962962962964, "5 Star": 17395.962962962964, "4 Star": 15130.962962962962, "3 Star": 11749.962962962962, "2 Star": 10337.962962962962}, "2.5": {"5 Star Elite": 20729.962962962964, "5 Star": 17395.962962962964, "4 Star": 15130.962962962962, "3 Star": 11749.962962962962, "2 Star": 10337.962962962962}, "3": {"5 Star Elite": 21000.333333333332, "5 Star": 17666.333333333332, "4 Star": 15401.333333333332, "3 Star": 12020.333333333332, "2 Star": 10608.333333333332}, "3.5": {"5 Star Elite": 21000.333333333332, "5 Star": 17666.333333333332, "4 Star": 15401.333333333332, "3 Star": 12020.333333333332, "2 Star": 10608.333333333332}, "4": {"5 Star Elite": 21846.629629629628, "5 Star": 18512.629629629628, "4 Star": 16247.62962962963, "3 Star": 12866.62962962963, "2 Star": 11454.62962962963}, "5": {"5 Star Elite": 21846.629629629628, "5 Star": 18512.629629629628, "4 Star": 16247.62962962963, "3 Star": 12866.62962962963, "2 Star": 11454.62962962963}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}, "ac": {"prices": {"1.5": {"5 Star Elite": 21554.037037037036, "5 Star": 18220.037037037036, "4 Star": 15955.037037037036, "3 Star": 12574.037037037036, "2 Star": 11162.037037037036}, "2": {"5 Star Elite": 21554.037037037036, "5 Star": 18220.037037037036, "4 Star": 15955.037037037036, "3 Star": 12574.037037037036, "2 Star": 11162.037037037036}, "2.5": {"5 Star Elite": 20705.88888888889, "5 Star": 17371.88888888889, "4 Star": 15106.888888888889, "3 Star": 11725.888888888889, "2 Star": 10313.888888888889}, "3": {"5 Star Elite": 20965.148148148146, "5 Star": 17631.148148148146, "4 Star": 15366.148148148148, "3 Star": 11985.148148148148, "2 Star": 10573.148148148148}, "3.5": {"5 Star Elite": 22354.037037037036, "5 Star": 19020.037037037036, "4 Star": 16755.037037037036, "3 Star": 13374.037037037036, "2 Star": 11962.037037037036}, "4": {"5 Star Elite": 22354.037037037036, "5 Star": 19020.037037037036, "4 Star": 16755.037037037036, "3 Star": 13374.037037037036, "2 Star": 11962.037037037036}, "5": {"5 Star Elite": 23017, "5 Star": 19683, "4 Star": 17418, "3 Star": 14037, "2 Star": 12625}}, "features": {"5 Star Elite": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Air Filtration System", "Dial in Home Humidification", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "5 Star": ["10 Year Full Parts Warranty", "10 Year Not a Dime Labor Warranty", "Air Purification System", "Antibacterial Fogging Sanitization", "Wifi Smart Control Center", "3 Year Service Agreement - System Check"], "4 Star": ["10 Year Full Parts Warranty", "5 Year Not a Dime Labor Warranty", "Air Purification System", "Touch Screen Control Center", "2 Year Service Agreement - System Check"], "3 Star": ["10 Year Parts Warranty", "1 Year Labor Warranty", "Digital Programmable Thermostat", "1 Year Service Agreement - System Check"], "2 Star": ["5 Year Parts Warranty", "1 Year Labor Warranty", "Digital Thermostat", "1 Seasonal Start Up"]}}}}};
+const ADDONS = [{"name": "Dial in Home Humidification", "price": 1667, "cat": "Air Quality", "desc": "Whole-home humidifier with dial-in humidity control"}, {"name": "Air Purification System", "price": 1667, "cat": "Air Quality", "desc": "Whole-home air purification / scrubber"}, {"name": "Air Filtration System", "price": 1667, "cat": "Air Quality", "desc": "High-capacity media filtration system"}, {"name": "Antibacterial Fogging Sanitization", "price": 989, "cat": "Air Quality", "desc": "Ductwork antibacterial fogging treatment"}, {"name": "Wifi Smart Control Center", "price": 850, "cat": "Controls", "desc": "Wi-Fi smart thermostat control center"}, {"name": "Touch Screen Control Center", "price": 750, "cat": "Controls", "desc": "Touch screen thermostat control center"}, {"name": "Digital Programmable Thermostat", "price": 400, "cat": "Controls", "desc": "7-day programmable digital thermostat"}, {"name": "10 Year Full Parts Warranty", "price": 1200, "cat": "Warranty", "desc": "Full parts coverage for 10 years"}, {"name": "10 Year Not a Dime Labor Warranty", "price": 1200, "cat": "Warranty", "desc": "Zero-cost labor coverage for 10 years"}, {"name": "10 Year Labor Warranty", "price": 820, "cat": "Warranty", "desc": "Labor coverage for 10 years"}, {"name": "5 Year Not a Dime Labor Warranty", "price": 600, "cat": "Warranty", "desc": "Zero-cost labor coverage for 5 years"}, {"name": "3 Year Service Agreement - System Check", "price": 576, "cat": "Service", "desc": "3 years of system check visits"}, {"name": "2 Year Service Agreement - System Check", "price": 384, "cat": "Service", "desc": "2 years of system check visits"}, {"name": "1 Year Service Agreement - System Check", "price": 192, "cat": "Service", "desc": "1 year system check visit"}];
 
-// OPMAN 2025 commission scale: rate by lead type, stepped down as margin
-// erodes, floored at 2% below 10%. Mirrors the live formula in the OPMAN
-// "Job Report" sheet: the qualifying margin is measured AFTER subtracting
-// that lead type's flat base-rate commission (12%/10%/8%), not after the
-// final tiered commission — a true post-final-commission self-consistency
-// check has dead zones (prices where no tier is stable) because commission
-// is a flat % of price, so this is both the mathematically sound approach
-// and what actually determines real paychecks.
-const LEAD_RATES={
-  sgl:{label:"Self-Generated", rates:[0.12,0.10,0.08,0.06,0.02]},
-  mkl:{label:"Marketed",       rates:[0.10,0.08,0.06,0.04,0.02]},
-  tgl:{label:"Tech-Generated", rates:[0.08,0.06,0.04,0.02,0.02]}
-};
-const MARGIN_THRESHOLDS=[0.25,0.20,0.15,0.10,0.05]; // level 1..5 lower bounds; below 5% stays floored at level 5
-function tierForMargin(pct){
-  for(let i=0;i<MARGIN_THRESHOLDS.length;i++) if(pct>=MARGIN_THRESHOLDS[i]) return i+1;
-  return 5;
+/* ================= shared ================= */
+const fmt = n => (n<0?"−$":"$") + Math.abs(Math.round(n)).toLocaleString("en-US");
+const fmtPmt = n => "$" + (Math.round(n*100)/100).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const PM = 0.01085;
+const PKGS = ["2 Star","3 Star","4 Star","5 Star","5 Star Elite"];
+const STARN = {"2 Star":2,"3 Star":3,"4 Star":4,"5 Star":5,"5 Star Elite":5};
+const PRODUCT_LABEL = {system:"Full Comfort System",furnace:"Furnace Only",ac:"Air Conditioner Only"};
+const MATERIALS = {standard:692, high:892};
+const BASEPKG = 663, DAYRATE = 4945, DENOM = 0.54, BOOK_FIN = 0.08, BOOK_COMM = 0.13;
+const DAYS = {system:1, furnace:0.5, ac:0.5};
+
+function seg(el, options, cur, cb){
+  el.innerHTML="";
+  options.forEach(([val,label])=>{
+    const b=document.createElement("button");
+    b.textContent=label; b.className = val===cur?"on":"";
+    b.onclick=()=>cb(val);
+    el.appendChild(b);
+  });
 }
-function resolveCommission(leadKey, preCommProfit, P){
-  const rates=LEAD_RATES[leadKey].rates;
-  const baseRate=rates[0];
-  const marginAtBase=P?(preCommProfit-baseRate*P)/P:0;
-  const level=tierForMargin(marginAtBase);
-  return {rate:rates[level-1], level};
+function chips(el, options, cur, cb){
+  el.innerHTML="";
+  options.forEach(([val,label])=>{
+    const b=document.createElement("button");
+    b.textContent=label; b.className = val===cur?"on":"";
+    b.onclick=()=>cb(val);
+    el.appendChild(b);
+  });
+}
+function showTab(t){
+  document.getElementById("tabPB").className = t==="pb"?"on":"";
+  document.getElementById("tabWI").className = t==="wi"?"on":"";
+  document.getElementById("panePB").className = "tabpane"+(t==="pb"?" on":"");
+  document.getElementById("paneWI").className = "tabpane"+(t==="wi"?" on":"");
+  window.scrollTo({top:0});
 }
 
-const $=id=>document.getElementById(id);
-const fmt$=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString();
-const fmt$c=n=>(n<0?"−$":"$")+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtP=n=>(n*100).toFixed(1)+"%";
+/* ================= tab 1: pricebook ================= */
+const state = {eff:"standard", prod:"system", ton:"3", pkg:"2 Star", addons:new Set()};
 
-const PLANS=[
-  {label:"61 Mo @ 7.99%", n:61, apr:0.0799},
-  {label:"132 Mo @ 9.99%", n:132, apr:0.0999},
-  {label:"37 Mo @ 5.99%", n:37, apr:0.0599},
-  {label:"78 Mo @ 9.99%", n:78, apr:0.0999},
-  {label:"6 Mo @ 0.00%", n:6, apr:0},
-  {label:"18 Mo @ 0.00%", n:18, apr:0},
-];
-function ppm(P,n,apr){
-  if(P<=0) return 0;
-  if(apr===0) return P/n;
-  const r=apr/12;
-  return P*r/(1-Math.pow(1+r,-n));
+function includedSet(){
+  const feats = BOOK[state.eff].products[state.prod].features[state.pkg]||[];
+  return new Set(feats.map(f=>f.trim()));
 }
-
-function jobParams(){
-  const b=BOOKS[$("eff").value];
-  const type=$("jobtype").value, size=$("size").value, tier=$("tier").value;
-  let equip, days;
-  if(type==="system"){equip=b.furnCost[size]+b.acCost[size]; days=1;}
-  else if(type==="furnace"){equip=b.furnCost[size]; days=0.5;}
-  else {equip=b.acCost[size]; days=0.5;}
-  return {equip, days, premium:b.premiums[tier]??0, mats:b.acMat+b.furnMat};
-}
-
-function bookPrice(p){
-  // pricebook constants: 25% margin, 13% comm, 8% financing in the divisor
-  const base=(p.equip+p.mats+PKG+BREAKEVEN*p.days)/(1-0.46);
-  return base+p.premium;
-}
-
-function calc(P, p, book){
-  const finRate=$("cash").checked?0:(+$("finrate").value||0)/100;
-  const addCost=+$("addcost").value||0;
-  const direct=p.equip+p.mats+PKG+addCost;
-  const overhead=BREAKEVEN*p.days;
-  const financing=finRate*P;
-  const gp=P-direct;
-  const preCommProfit=gp-overhead-financing;
-  const leadKey=$("leadtype").value;
-  const cr=resolveCommission(leadKey, preCommProfit, P);
-  const commission=cr.rate*P;
-  const np=preCommProfit-commission;
-  return {P,direct,overhead,financing,commission,gp,np,
-          gpPct:P?gp/P:0, npPct:P?np/P:0,
-          commRate:cr.rate, commLevel:cr.level};
-}
-
-function floors(p, book){
-  // scan for price that hits target margin and true breakeven under current settings
-  const target=(+$("target").value||0)/100;
-  let floorTarget=null, floorZero=null;
-  for(let P=1000;P<=60000;P+=10){
-    const r=calc(P,p,book);
-    if(floorZero===null && r.np>=0) floorZero=P;
-    if(floorTarget===null && r.npPct>=target) floorTarget=P;
-    if(floorZero&&floorTarget) break;
-  }
-  return {floorTarget,floorZero,target};
-}
-
-function seg(cls,w,title){const d=document.createElement("div");d.className=cls;d.style.width=w+"%";d.title=title;return d;}
+function basePrice(){ return BOOK[state.eff].products[state.prod].prices[state.ton][state.pkg]; }
+function addonTotal(){ let t=0; ADDONS.forEach(a=>{ if(state.addons.has(a.name)) t+=a.price; }); return t; }
 
 function render(){
-  const p=jobParams();
-  const book=bookPrice(p);
-  $("bookprice").textContent=fmt$(book);
-  $("bookpmt").textContent="Payment at book: "+fmt$(book*PMT)+"/mo (180 mo)";
-  $("sellrange").max=Math.ceil(book*1.25/50)*50;
+  seg(document.getElementById("segEff"),[["standard","Standard Efficiency"],["high","High Efficiency"]],state.eff,v=>{state.eff=v;render();});
+  seg(document.getElementById("segProd"),[["system","Full System"],["furnace","Furnace Only"],["ac","AC Only"]],state.prod,v=>{state.prod=v;render();});
+  const tons=Object.keys(BOOK[state.eff].products[state.prod].prices);
+  chips(document.getElementById("chipsTon"),tons.map(t=>[t,t]),state.ton,v=>{state.ton=v;render();});
 
-  const P=+$("sell").value||0;
-  const r=calc(P,p,book);
-  const b=calc(book,p,book);
-  const target=(+$("target").value||0)/100;
-
-  // hero stats
-  $("gp").textContent=fmt$(r.gp); $("gppct").textContent=fmtP(r.gpPct)+" of price";
-  $("np").textContent=fmt$(r.np); $("nppct").textContent=fmtP(r.npPct)+" of price";
-  $("om").textContent=fmtP(r.npPct);
-  const delta=r.npPct-target;
-  $("omdelta").textContent=(delta>=0?"+":"−")+Math.abs(delta*100).toFixed(1)+" pts vs "+(target*100)+"% target";
-  $("comm").textContent=fmt$(r.commission);
-  $("commnote").textContent=LEAD_RATES[$("leadtype").value].label+" · Level "+r.commLevel+" · "+(r.commRate*100).toFixed(0)+"% rate";
-
-  // selected financing plan payment
-  const [pn,papr]=$("finplan").value.split("|").map(Number);
-  const selPmt=ppm(P,pn,papr);
-  $("pmtplan").textContent=fmt$c(selPmt);
-  $("pmtplannote").textContent=pn+" mo @ "+(papr*100).toFixed(2)+"% · at book: "+fmt$c(ppm(book,pn,papr));
-
-  // all plans table
-  const pb=$("plansbody"); pb.innerHTML="";
-  PLANS.forEach(pl=>{
-    const m=ppm(P,pl.n,pl.apr), tot=m*pl.n;
-    const sel=(pl.n===pn&&pl.apr===papr);
-    const tr=document.createElement("tr");
-    if(sel) tr.style.background="#f4f7fb";
-    tr.innerHTML=`<td>${sel?"▶ ":""}${pl.label}</td>
-      <td class="num"><b>${fmt$c(m)}</b></td>
-      <td class="num">${fmt$(tot)}</td>
-      <td class="num">${fmt$(tot-P)}</td>`;
-    pb.appendChild(tr);
+  const cards=document.getElementById("cards"); cards.innerHTML="";
+  PKGS.forEach(p=>{
+    const price=BOOK[state.eff].products[state.prod].prices[state.ton][p];
+    const feats=BOOK[state.eff].products[state.prod].features[p]||[];
+    const card=document.createElement("button");
+    card.className="pkg"+(p===state.pkg?" sel":"");
+    const n=STARN[p];
+    let stars="";
+    for(let i=0;i<5;i++) stars+=`<span class="${i<n?"":"off"}">★</span>`;
+    if(p==="5 Star Elite") stars+=' <span style="font-size:11px;letter-spacing:.1em;color:var(--brass);font-weight:700">ELITE</span>';
+    card.innerHTML=`<div class="stars">${stars}</div><h3>${p}</h3>
+      <ul>${feats.map(f=>`<li>${f}</li>`).join("")}</ul>
+      <div class="price">${fmt(price)}</div>
+      <div class="pmt">or <b>${fmtPmt(price*PM)}/mo</b></div>`;
+    card.onclick=()=>{state.pkg=p;render();};
+    cards.appendChild(card);
   });
 
-  const cls=v=>v>=target?"good":(v>=0?"warn":"bad");
-  $("st-np").className="stat "+cls(r.npPct);
-  $("st-om").className="stat "+cls(r.npPct);
-  $("st-gp").className="stat "+(r.gp>=0?"":"bad");
+  const incl=includedSet();
+  const list=document.getElementById("addonList"); list.innerHTML="";
+  let lastCat=null, shown=0;
+  ADDONS.forEach(a=>{
+    if(incl.has(a.name)) { state.addons.delete(a.name); return; }
+    if(a.cat!==lastCat){
+      const h=document.createElement("div"); h.className="cat"; h.textContent=a.cat;
+      list.appendChild(h); lastCat=a.cat;
+    }
+    const on=state.addons.has(a.name);
+    const row=document.createElement("button");
+    row.className="addon"+(on?" on":"");
+    row.innerHTML=`<span class="box"><svg viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5l3.5 3.5 7-8" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="nm"><b>${a.name}</b><em>${a.desc}</em></span>
+      <span class="pr">${fmt(a.price)}</span>`;
+    row.onclick=()=>{ on?state.addons.delete(a.name):state.addons.add(a.name); render(); };
+    list.appendChild(row); shown++;
+  });
+  document.getElementById("addonSub").textContent=`${shown} available for this package`;
+  document.getElementById("inclNote").textContent=
+    `Options already included in the ${state.pkg} package aren't listed — they're in the price.`;
 
-  // waterfall bar
-  const bar=$("bar"); bar.innerHTML="";
-  if(P>0){
-    const pct=v=>Math.max(0,v/P*100);
-    bar.appendChild(seg("seg-eq",pct(p.equip),"Equipment "+fmt$(p.equip)));
-    bar.appendChild(seg("seg-mat",pct(p.mats+PKG+(+$("addcost").value||0)),"Materials + base pkg"));
-    bar.appendChild(seg("seg-ovh",pct(r.overhead),"Overhead "+fmt$(r.overhead)));
-    bar.appendChild(seg("seg-fin",pct(r.financing),"Financing "+fmt$(r.financing)));
-    bar.appendChild(seg("seg-com",pct(r.commission),"Commission "+fmt$(r.commission)));
-    if(r.np>=0) bar.appendChild(seg("seg-net",pct(r.np),"Net profit "+fmt$(r.np)));
-    else bar.appendChild(seg("seg-loss",Math.min(25,pct(-r.np)),"LOSS "+fmt$(r.np)));
+  const bp=basePrice(), at=addonTotal(), total=bp+at;
+  document.getElementById("tkSub").textContent=`${state.ton} ton · ${state.eff==="high"?"High":"Standard"} Eff.`;
+  const lines=document.getElementById("tkLines"); lines.innerHTML="";
+  const mk=(l,r,cls)=>{const d=document.createElement("div");d.className="tk-line "+(cls||"");
+    d.innerHTML=`<span>${l}</span><span>${r}</span>`;lines.appendChild(d);};
+  mk(`${state.pkg} · ${PRODUCT_LABEL[state.prod]}`, fmt(bp), "base");
+  ADDONS.forEach(a=>{ if(state.addons.has(a.name)) mk(a.name, "+ "+fmt(a.price), "add"); });
+  document.getElementById("tkTotal").textContent=fmt(total);
+  document.getElementById("tkPmt").textContent=fmtPmt(total*PM)+"/mo";
+  const delta=document.getElementById("tkDelta");
+  if(at>0){
+    delta.innerHTML=`Options add <b>${fmt(at)}</b> to the ${state.pkg} base of ${fmt(bp)} —
+      that's <b>${fmtPmt(at*PM)}</b> more per month.`;
+  } else {
+    delta.innerHTML=`Tap options on the left to see how each one changes the price.`;
+  }
+}
+
+/* ================= tab 2: what-if ================= */
+const PLANS = [
+  {label:"61 Months @ 7.99% APR", n:61, apr:0.0799},
+  {label:"132 Months @ 9.99% APR", n:132, apr:0.0999},
+  {label:"37 Months @ 5.99% APR", n:37, apr:0.0599},
+  {label:"78 Months @ 9.99% APR", n:78, apr:0.0999},
+  {label:"6 Months @ 0.00% APR", n:6, apr:0},
+  {label:"18 Months @ 0.00% APR", n:18, apr:0},
+];
+const LEADS = [["self","Self-Generated"],["marketed","Marketed"],["tech","Tech-Generated"]];
+const COMM_SCALE = [
+  {min:0.25, self:0.12, marketed:0.10, tech:0.08, tier:"≥ 25%"},
+  {min:0.20, self:0.10, marketed:0.08, tech:0.06, tier:"20–24.9%"},
+  {min:0.15, self:0.08, marketed:0.06, tech:0.04, tier:"15–19.9%"},
+  {min:0.10, self:0.06, marketed:0.04, tech:0.02, tier:"10–14.9%"},
+  {min:-99,  self:0.02, marketed:0.02, tech:0.02, tier:"< 10%"},
+];
+const wi = {eff:"standard", prod:"system", tier:"5 Star Elite", ton:"3", plan:0, lead:"self",
+            price:null, fin:8, target:25, addCost:0, cash:false};
+
+function wiBookPrice(){ return BOOK[wi.eff].products[wi.prod].prices[wi.ton][wi.tier]; }
+function wiCosts(){
+  const p2 = BOOK[wi.eff].products[wi.prod].prices[wi.ton]["2 Star"];
+  const overhead = DAYRATE*DAYS[wi.prod];
+  const mat = MATERIALS[wi.eff];
+  const equip = p2*DENOM - mat - BASEPKG - overhead;
+  return {equip, mat, overhead, base:BASEPKG,
+          jobCost: p2*DENOM + (+wi.addCost||0)};
+}
+function commRate(margin, lead){
+  const row = COMM_SCALE.find(r=>margin>=r.min);
+  return {rate:row[lead], tier:row.tier};
+}
+function planPmt(P, plan){
+  if(P<=0) return 0;
+  if(plan.apr===0) return P/plan.n;
+  const r=plan.apr/12;
+  return P*r/(1-Math.pow(1+r,-plan.n));
+}
+function analyze(P, finPct, commPct, lead){
+  const c = wiCosts();
+  const finCost = wi.cash ? 0 : P*finPct;
+  const margin = P>0 ? (P - c.jobCost - finCost)/P : 0;
+  let rate, tier;
+  if(commPct!=null){ rate=commPct; tier="book flat"; }
+  else { const r=commRate(margin, lead); rate=r.rate; tier=r.tier; }
+  const commission = P*rate;
+  const gp = P - c.jobCost;
+  const net = gp - finCost - commission;
+  return {...c, finCost, margin, rate, tier, commission, gp, net};
+}
+
+function wiRender(){
+  seg(document.getElementById("wiSegEff"),[["standard","Standard"],["high","High Efficiency"]],wi.eff,v=>{wi.eff=v;wi.price=null;wiRender();});
+  seg(document.getElementById("wiSegProd"),[["system","Full System"],["furnace","Furnace Only"],["ac","AC Only"]],wi.prod,v=>{wi.prod=v;wi.price=null;wiRender();});
+  chips(document.getElementById("wiChipsTier"),PKGS.slice().reverse().map(p=>[p,p]),wi.tier,v=>{wi.tier=v;wi.price=null;wiRender();});
+  const tons=Object.keys(BOOK[wi.eff].products[wi.prod].prices);
+  chips(document.getElementById("wiChipsTon"),tons.map(t=>[t,t+" Ton"]),wi.ton,v=>{wi.ton=v;wi.price=null;wiRender();});
+  seg(document.getElementById("wiSegLead"),LEADS,wi.lead,v=>{wi.lead=v;wiRender();});
+
+  const planSel=document.getElementById("wiPlan");
+  if(planSel.options.length===0){
+    PLANS.forEach((p,i)=>{const o=document.createElement("option");o.value=i;o.textContent=p.label;planSel.appendChild(o);});
+    planSel.onchange=()=>{wi.plan=+planSel.value;wiRender();};
+  }
+  planSel.value=wi.plan;
+
+  const book = wiBookPrice();
+  document.getElementById("wiBook").textContent = fmt(book);
+  if(wi.price==null) wi.price = Math.round(book);
+  const pin=document.getElementById("wiPrice");
+  if(document.activeElement!==pin) pin.value = Math.round(wi.price);
+
+  const cashEl=document.getElementById("wiCash");
+  cashEl.className="cash"+(wi.cash?" on":"");
+  cashEl.setAttribute("aria-checked",wi.cash);
+
+  const P = +wi.price||0;
+  const f = (+wi.fin||0)/100;
+  const you = analyze(P, f, null, wi.lead);
+  const atBook = analyze(book, BOOK_FIN, BOOK_COMM, wi.lead);
+
+  const setStat=(id,val,cls,note)=>{
+    const el=document.getElementById(id);
+    el.className="stat "+(cls||"");
+    el.querySelector("b").textContent=val;
+    const s=el.querySelector("small"); if(s&&note!==undefined) s.textContent=note;
+  };
+  setStat("stGP", fmt(you.gp), you.gp>=0?"pos":"neg");
+  setStat("stNet", fmt(you.net), you.net>=0?"pos":"neg");
+  const tgt=(+wi.target||0)/100;
+  setStat("stMargin",(you.margin*100).toFixed(1)+"%",
+    you.margin>=tgt?"pos":(you.margin>=0.10?"warn":"neg"),
+    you.margin>=tgt?"at or above target":"below "+wi.target+"% target");
+  setStat("stComm", fmt(you.commission), "", (you.rate*100).toFixed(0)+"% · "+you.tier+" tier");
+  const plan=PLANS[wi.plan];
+  setStat("stPmt", fmtPmt(planPmt(P,plan)), "", plan.label);
+
+  // dollar bar
+  const segs=[
+    ["Equipment", you.equip, "#1B4E72"],
+    ["Materials + Base Pkg", you.mat+you.base+(+wi.addCost||0), "#4A90C4"],
+    ["Overhead (Breakeven)", you.overhead, "#5D6E7C"],
+    ["Financing", you.finCost, "#A8802E"],
+    ["Commission", you.commission, "#B4451F"],
+    ["Net Profit", Math.max(you.net,0), you.net>=0?"#2E6B3F":"#A83226"],
+  ];
+  const total=Math.max(P, segs.reduce((s,x)=>s+x[1],0));
+  const bar=document.getElementById("wiBar"); bar.innerHTML="";
+  const leg=document.getElementById("wiLegend"); leg.innerHTML="";
+  segs.forEach(([l,v,c])=>{
+    if(v<=0&&l!=="Net Profit")return;
+    const w=total>0?Math.max(v/total*100,0):0;
+    const d=document.createElement("div");
+    d.style.background=c; d.style.flex=w+" 0 0"; d.title=`${l}: ${fmt(v)}`;
+    if(w>9) d.textContent=fmt(v);
+    bar.appendChild(d);
+    const li=document.createElement("span");
+    li.innerHTML=`<i style="background:${c}"></i>${l} — ${fmt(l==="Net Profit"?you.net:v)}`;
+    leg.appendChild(li);
+  });
+  if(you.net<0){
+    const li=document.createElement("span");
+    li.innerHTML=`<b style="color:var(--bad)">⚠ This price loses ${fmt(Math.abs(you.net))} on the job.</b>`;
+    leg.appendChild(li);
   }
 
-  // status band
-  const band=$("band");
-  if(r.npPct>=target){band.textContent="Green — holding "+(target*100)+"%+ margin";band.style.background="var(--green)";}
-  else if(r.npPct>=0){band.textContent="Yellow — profitable, but below the "+(target*100)+"% target";band.style.background="var(--amber)";}
-  else {band.textContent="Red — this price loses money";band.style.background="var(--red)";}
+  // compare table
+  const cmp=document.getElementById("wiCompare"); cmp.innerHTML="";
+  const row=(label,a,b,fmtFn=fmt)=>{
+    const d=b-a, tr=document.createElement("tr");
+    tr.innerHTML=`<td>${label}</td><td>${fmtFn(a)}</td><td>${fmtFn(b)}</td>
+      <td class="${d>0.5?"pos":d<-0.5?"neg":""}">${d>0.5?"+":""}${fmtFn(d)}</td>`;
+    cmp.appendChild(tr);
+  };
+  row("Selling price", book, P);
+  row("Gross profit", atBook.gp, you.gp);
+  row("Financing cost", atBook.finCost, you.finCost);
+  row("Commission", atBook.commission, you.commission);
+  row("Net profit", atBook.net, you.net);
+  const trm=document.createElement("tr");
+  const dm=(you.margin-atBook.margin)*100;
+  trm.innerHTML=`<td>Obtained margin</td><td>${(atBook.margin*100).toFixed(1)}%</td>
+    <td>${(you.margin*100).toFixed(1)}%</td>
+    <td class="${dm>0.05?"pos":dm<-0.05?"neg":""}">${dm>0?"+":""}${dm.toFixed(1)} pts</td>`;
+  cmp.appendChild(trm);
 
-  // comparison table
-  const rows=[
-    ["Selling Price", b.P, r.P, true],
-    ["Discount off Book", 0, book-P, true],
-    ["Gross Profit $", b.gp, r.gp, true],
-    ["Gross Profit %", b.gpPct, r.gpPct, false],
-    ["Overhead (Breakeven)", b.overhead, r.overhead, true],
-    ["Financing Cost", b.financing, r.financing, true],
-    ["Commission to Consultant", b.commission, r.commission, true],
-    ["Net Profit $", b.np, r.np, true],
-    ["Net Profit / Obtained Margin %", b.npPct, r.npPct, false],
-  ];
-  const tb=$("tbody"); tb.innerHTML="";
-  rows.forEach(([name,bv,rv,isDollar],i)=>{
+  // payment plans table
+  const pt=document.getElementById("wiPlans"); pt.innerHTML="";
+  PLANS.forEach((pl,i)=>{
+    const pmt=planPmt(P,pl), tot=pmt*pl.n;
     const tr=document.createElement("tr");
-    if(name.startsWith("Net Profit $")) tr.className="total";
-    const d=rv-bv;
-    const dTxt=isDollar
-      ? (d===0?"—":(d>0?"+":"−")+"$"+Math.abs(Math.round(d)).toLocaleString())
-      : (Math.abs(d)<0.0005?"—":(d>0?"+":"−")+Math.abs(d*100).toFixed(1)+" pts");
-    const good=(name==="Discount off Book"||name==="Financing Cost")?d<0:d>0;
-    tr.innerHTML=`<td>${name}</td>
-      <td class="num">${isDollar?fmt$(bv):fmtP(bv)}</td>
-      <td class="num">${isDollar?fmt$(rv):fmtP(rv)}</td>
-      <td class="num ${d===0?"":(good?"delta-pos":"delta-neg")}">${dTxt}</td>`;
-    tb.appendChild(tr);
+    if(i===wi.plan) tr.style.background="var(--brass-soft)";
+    tr.innerHTML=`<td>${pl.label}</td><td>${fmtPmt(pmt)}</td><td>${fmt(tot)}</td><td>${fmt(tot-P)}</td>`;
+    pt.appendChild(tr);
   });
-
-  // floors
-  const f=floors(p,book);
-  $("floors").innerHTML=
-    "Floor to hold "+(f.target*100)+"% margin: <b>"+(f.floorTarget?fmt$(f.floorTarget):"n/a")+"</b>"+
-    " &nbsp;·&nbsp; True breakeven (0% net): <b>"+(f.floorZero?fmt$(f.floorZero):"n/a")+"</b>"+
-    " &nbsp;·&nbsp; Payment at your price: <b>"+fmt$(P*PMT)+"/mo</b>";
 }
-
-function rebuildTiers(){
-  const b=BOOKS[$("eff").value];
-  const cur=$("tier").value;
-  $("tier").innerHTML=b.tiers.map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
-  if(!b.tiers.includes(cur)) $("tier").value=b.tiers[0];
+function nudge(what){
+  const book=wiBookPrice();
+  if(what==="book") wi.price=Math.round(book);
+  else if(what==="lfp") wi.price=Math.round(book*0.95);
+  else wi.price=Math.round((+wi.price||book)+what);
+  wiRender();
 }
-
-function resetToBook(){
-  const book=bookPrice(jobParams());
-  $("sell").value=Math.round(book);
-  $("sellrange").value=Math.round(book);
-  render();
-}
-
-$("eff").addEventListener("change",()=>{ rebuildTiers(); resetToBook(); });
-["jobtype","tier","size"].forEach(id=>$(id).addEventListener("change",resetToBook));
-["finrate","target","addcost","finplan"].forEach(id=>$(id).addEventListener("input",render));
-$("leadtype").addEventListener("change",render);
-$("cash").addEventListener("change",render);
-$("sell").addEventListener("input",()=>{ $("sellrange").value=$("sell").value; render(); });
-$("sellrange").addEventListener("input",()=>{ $("sell").value=$("sellrange").value; render(); });
-document.querySelectorAll(".quick button").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    const book=bookPrice(jobParams());
-    const acts={book:book, lfp:book*0.95, m500:(+$("sell").value||book)-500,
-                m1000:(+$("sell").value||book)-1000, m2000:(+$("sell").value||book)-2000};
-    const v=Math.max(0,Math.round(acts[btn.dataset.act]));
-    $("sell").value=v; $("sellrange").value=v; render();
-  });
+document.getElementById("wiPrice").addEventListener("input",e=>{wi.price=+e.target.value||0;wiRender();});
+["wiFin","wiTarget","wiAddCost"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",e=>{
+    wi[{wiFin:"fin",wiTarget:"target",wiAddCost:"addCost"}[id]]=+e.target.value||0;wiRender();});
 });
+const cashEl=document.getElementById("wiCash");
+cashEl.addEventListener("click",()=>{wi.cash=!wi.cash;wiRender();});
+cashEl.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();wi.cash=!wi.cash;wiRender();}});
 
-resetToBook();
+/* ================= bridge ================= */
+function sendToWhatIf(){
+  wi.eff=state.eff; wi.prod=state.prod; wi.ton=state.ton; wi.tier=state.pkg;
+  wi.price=Math.round(basePrice()+addonTotal());
+  wiRender();
+  showTab("wi");
+}
+
+render();
+wiRender();
 </script>
 </body>
 </html>
